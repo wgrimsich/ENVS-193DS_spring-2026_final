@@ -52,7 +52,7 @@ One additional variable that could influence the probability of American Avocet 
 
 ### a. Clean & Wrangle
 
-```{r}
+```{r Cleaning Data}
 
 nests_clean <- nests |> 
   select(case_control, ant_species, height_cm) |> 
@@ -72,6 +72,7 @@ nests_clean <- nests |>
 str(nests_clean)
 
 slice_sample(nests_clean, n = 10)
+
 ```
 
 
@@ -87,57 +88,88 @@ The 1s and 0s present within the "case_control" column of the data represent if 
 
 ### d. Table of Models
 
-| Model number | Ant Species | Height | Nests | Predictor List              |  
-|--------------|:-----------:|:------:|:-----:|:---------------------------:|  
-| 0            |             |        |       | no predictors (null model)  |
-| 1            |      X      |    X   |   X   | all predictors (full model) | 
-| 2            |      X      |    X   |       | Ant Species and Height      |   
-| 3            |      X      |        |   X   | Ant Species and Nests       |    
-| 4            |             |    X   |   X   | Height and Nests            |    
-| 5            |      X      |        |       | Ant Species                 |    
-| 6            |             |    X   |       | Height                      |    
-| 7            |             |        |   X   | Nests                       |
+| Model number | Model Description               |
+|--------------|:-------------------------------:|
+| 1            | Ants and Height: No Interaction |
+| 2            |Ants and Height: With Interaction|
 
-| Model number | Ant Species | Height | Predictor List      |
-|--------------|:-----------:|:------:|:--------------------|
-| 0            |             |        | null model          |
-| 1            |      X      |    X   | no interaction term |
-| 2            |      X      |    X   | interaction term    |
+| Model number | Predictor List           | Interaction Term? |
+|--------------|:------------------------:|:-----------------:|
+| 1            | Ant Species, Tree Height | No Interaction    |
+| 2            | Ant Species, Tree Height | With Interaction  |
 
 ### e. Running the Models
 
-```{r}
+```{r Creating Models}
 
-model0 <- lm(case_control ~ 1,
-             data = nests_clean)
-model0
+model1 <- glm(case_control ~ ant_name + height_cm,
+             data = nests_clean,
+             family = "binomial")
+model1
+
+model2 <- glm(case_control ~ ant_name*height_cm,
+             data = nests_clean,
+             family = "binomial")
+model2
+
 ```
-
 
 ### f. Selecting the Best Model
 
+```{r AIC}
+AIC(model1, model2)
+```
+
+The best model as determined by Akaike's Information Criterion (AIC) was the model predicting the probability of bird nest occurrence as predicted by ant species interacting with tree height.
+
 ### g. Checking Diagnostics
+
+```{r Plotting Diagnostics}
+par(mfrow = c(2,2))
+plot(model2)
+```
 
 ### h. Visualizing Model Predictions
 
+
+
 ### i. Writing a Caption for Figure
+
+
 
 ### j. Calculating Model Predictions
 
+
+
 ### k. Interpreting Results
+
+
 
 ## Problem 3. Affective & Exploratory Visualizations
 
 ### a. Comparing Visualizations
 
+
+
 ### b. Designing an Analysis
+
+
 
 ### c. Checking Assumptions & Running Analysis
 
+
+
 ### d. Creating Visualization
+
+
 
 ### e. Writing Caption
 
+
+
 ### f. Writing About Results
 
+
+
 ### g. Sharing Affective Visualization
+
