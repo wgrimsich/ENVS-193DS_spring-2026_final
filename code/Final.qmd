@@ -21,9 +21,11 @@ execute:
 # Set Up
 
 ```{r Loading Packages and Data}
+
 library(tidyverse)
 library(here)
 library(janitor)
+library(DHARMa)
 
 nests <- read.csv(here("data","nest_data_final.csv"))
 ```
@@ -34,9 +36,9 @@ nests <- read.csv(here("data","nest_data_final.csv"))
 
 ### a. Transparent Statistical Methods
 
-In part 1, they used a binomial "log odds" regression to relate and predict (*Recurvirostra americana*) habitat occupation to distance from water edge.
+In part 1, they used a **binomial "log odds" regression** to relate and predict (*Recurvirostra americana*) habitat occupation to distance from the water's edge.
 
-In part 2, they used a Chi-Squared test to compare expected vs observed counts for habitat type and occupation by species.
+In part 2, they used a **Chi-Squared test** to compare expected vs observed counts for habitat type and occupation by species.
 
 ### b. Suggestions for Rewriting
 
@@ -46,7 +48,7 @@ Utilizing a Chi-Squared test, we found a significant relationship between bird s
 
 ### c. Further Analysis
 
-One additional variable that could influence the probability of American Avocet (*Recurvirostra americana*) microhabitat use is **salinity**. This variable is continuous, numerical (ppm) and often calculated after measuring electrical conductivity in micro Siemens per centimeter (µS/cm). Salinity influences a plethora of biological interactions, specifically dehydration, [bodyweight and feeding/preening behavior in American Avocet chicks](https://bioone.org/journals/waterbirds/volume-26/issue-1/1524-4695_2003_026_0119_IOSOGA_2.0.CO_2/Impacts-of-Salinity-on-Growth-and-Behavior-of-American-Avocet/10.1675/1524-4695(2003)026%5B0119:IOSOGA%5D2.0.CO;2.full).
+One additional variable that could influence the probability of American Avocet (*Recurvirostra americana*) microhabitat use is **salinity**. This variable is continuous, numerical (ppm) and often calculated after measuring electrical conductivity in micro Siemens per centimeter (µS/cm). Salinity influences a plethora of biological interactions, specifically dehydration, [bodyweight and feeding/preening behavior.](https://bioone.org/journals/waterbirds/volume-26/issue-1/1524-4695_2003_026_0119_IOSOGA_2.0.CO_2/Impacts-of-Salinity-on-Growth-and-Behavior-of-American-Avocet/10.1675/1524-4695(2003)026%5B0119:IOSOGA%5D2.0.CO;2.full).
 
 ## Problem 2. Data Analysis
 
@@ -55,8 +57,12 @@ One additional variable that could influence the probability of American Avocet 
 ```{r Cleaning Data}
 
 nests_clean <- nests |> 
-  select(case_control, ant_species, height_cm) |> 
-  filter(ant_species %in% c("AB", "RRB", "BBR")) |> 
+  select(case_control,
+         ant_species,
+         height_cm) |> 
+  filter(ant_species %in% c("AB",
+                            "RRB",
+                            "BBR")) |> 
   mutate(ant_name = case_match(
     ant_species,
     "AB" ~ "C.sjostedti",
@@ -64,17 +70,16 @@ nests_clean <- nests |>
     "BBR" ~ "C.nigriceps"
   )) |> 
   mutate(ant_name = as_factor(ant_name),
-    ant_name = fct_relevel(ant_name,
-                           "C.sjostedti",
-                           "C.mimosae",
-                           "C.nigriceps"))
+         ant_name = fct_relevel(ant_name,
+                                "C.sjostedti",
+                                "C.mimosae",
+                                "C.nigriceps"))
 
 str(nests_clean)
 
 slice_sample(nests_clean, n = 10)
 
 ```
-
 
 ### b. Response Variable
 
@@ -88,11 +93,6 @@ The 1s and 0s present within the "case_control" column of the data represent if 
 
 ### d. Table of Models
 
-| Model number | Model Description               |
-|--------------|:-------------------------------:|
-| 1            | Ants and Height: No Interaction |
-| 2            |Ants and Height: With Interaction|
-
 | Model number | Predictor List           | Interaction Term? |
 |--------------|:------------------------:|:-----------------:|
 | 1            | Ant Species, Tree Height | No Interaction    |
@@ -100,16 +100,20 @@ The 1s and 0s present within the "case_control" column of the data represent if 
 
 ### e. Running the Models
 
-```{r Creating Models}
+```{r Creating Models, output=FALSE}
 
-model1 <- glm(case_control ~ ant_name + height_cm,
-             data = nests_clean,
-             family = "binomial")
+model1 <- glm(
+  case_control ~ ant_name + height_cm,
+  data = nests_clean,
+  family = "binomial")
+
 model1
 
-model2 <- glm(case_control ~ ant_name*height_cm,
-             data = nests_clean,
-             family = "binomial")
+model2 <- glm(
+  case_control ~ ant_name*height_cm,
+  data = nests_clean,
+  family = "binomial")
+
 model2
 
 ```
@@ -117,7 +121,10 @@ model2
 ### f. Selecting the Best Model
 
 ```{r AIC}
-AIC(model1, model2)
+
+AIC(model1,
+    model2)
+
 ```
 
 The best model as determined by Akaike's Information Criterion (AIC) was the model predicting the probability of bird nest occurrence as predicted by ant species interacting with tree height.
@@ -125,12 +132,18 @@ The best model as determined by Akaike's Information Criterion (AIC) was the mod
 ### g. Checking Diagnostics
 
 ```{r Plotting Diagnostics}
-par(mfrow = c(2,2))
-plot(model2)
+
+plot(
+  simulateResiduals(model2)
+)
+
 ```
 
 ### h. Visualizing Model Predictions
 
+```{r GLM Plot}
+
+```
 
 
 ### i. Writing a Caption for Figure
