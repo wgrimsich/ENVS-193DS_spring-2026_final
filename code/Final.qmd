@@ -1,7 +1,13 @@
 ---
 title: "Final"
 author: "Will Grimsich"
-format: pdf
+format: 
+  pdf:
+    mainfont: "Helvetica Neue"
+    sansfont: "Arial"
+    header-includes: |
+      \usepackage{titling}
+      \setlength{\droptitle}{-0.5in}
 date: "June 9, 2026"
 toc: TRUE
 toc_depth: 2
@@ -10,14 +16,17 @@ execute:
   message: FALSE
 ---
 
-[Github Repository](https://github.com/wgrimsich/ENVS-193DS_spring-2026_final)
+# [Github Repository](https://github.com/wgrimsich/ENVS-193DS_spring-2026_final)
 
 # Set Up
 
 ```{r Loading Packages and Data}
+library(tidyverse)
+library(here)
+library(janitor)
 
+nest_data <- read.csv(here("data","nest_data_final.csv"))
 ```
-
 
 # Problems
 
@@ -25,9 +34,19 @@ execute:
 
 ### a. Transparent Statistical Methods
 
+In part 1, they used a binomial "log odds" regression to relate and predict (*Recurvirostra americana*) habitat occupation to distance from water edge.
+
+In part 2, they used a Chi-Squared test to compare expected vs observed counts for habitat type and occupation by species.
+
 ### b. Suggestions for Rewriting
 
+Utilizing binomial logistic regression analysis, we found a significant relationship between distance from the water's edge and American Avocet (*Recurvirostra americana*) microhabitat use.
+
+Utilizing a Chi-Squared test, we found a significant relationship between bird species (American Avocet, Forster’s Tern, Black-necked Stilt) and habitat (managed pond, non-tidal marsh, salt pond, tidal marsh, or tidal mudflat).
+
 ### c. Further Analysis
+
+One additional variable that could influence the probability of American Avocet (*Recurvirostra americana*) microhabitat use is **salinity**. This variable is continuous, numerical (ppm) and often calculated after measuring electrical conductivity in micro Siemens per centimeter (µS/cm). Salinity influences a plethora of biological interactions, specifically dehydration, [bodyweight and feeding/preening behavior in American Avocet chicks](https://bioone.org/journals/waterbirds/volume-26/issue-1/1524-4695_2003_026_0119_IOSOGA_2.0.CO_2/Impacts-of-Salinity-on-Growth-and-Behavior-of-American-Avocet/10.1675/1524-4695(2003)026%5B0119:IOSOGA%5D2.0.CO;2.full).
 
 ## Problem 2. Data Analysis
 
