@@ -1,0 +1,70 @@
+---
+title: "Final"
+author: "Will Grimsich"
+format: pdf
+date: "June 9, 2026"
+toc: TRUE
+toc_depth: 2
+execute:
+  warning: FALSE
+  message: FALSE
+---
+
+[Github Repository](https://github.com/wgrimsich/ENVS-193DS_spring-2026_final)
+
+# Set Up
+
+```{r Loading Packages and Data}
+
+```
+
+
+# Problems
+
+## Problem 1. Research Writing
+
+### a. Transparent Statistical Methods
+
+### b. Suggestions for Rewriting
+
+### c. Further Analysis
+
+## Problem 2. Data Analysis
+
+### a. Clean & Wrangle
+
+### b. Response Variable
+
+### c. Purpose of Study
+
+### d. Table of Models
+
+### e. Running the Models
+
+### f. Selecting the Best Model
+
+### g. Checking Diagnostics
+
+### h. Visualizing Model Predictions
+
+### i. Writing a Caption for Figure
+
+### j. Calculating Model Predictions
+
+### k. Interpreting Results
+
+## Problem 3. Affective & Exploratory Visualizations
+
+### a. Comparing Visualizations
+
+### b. Designing an Analysis
+
+### c. Checking Assumptions & Running Analysis
+
+### d. Creating Visualization
+
+### e. Writing Caption
+
+### f. Writing About Results
+
+### g. Sharing Affective Visualization
