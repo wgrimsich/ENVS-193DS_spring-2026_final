@@ -25,7 +25,7 @@ library(tidyverse)
 library(here)
 library(janitor)
 
-nest_data <- read.csv(here("data","nest_data_final.csv"))
+nests <- read.csv(here("data","nest_data_final.csv"))
 ```
 
 # Problems
@@ -52,13 +52,67 @@ One additional variable that could influence the probability of American Avocet 
 
 ### a. Clean & Wrangle
 
+```{r}
+
+nests_clean <- nests |> 
+  select(case_control, ant_species, height_cm) |> 
+  filter(ant_species %in% c("AB", "RRB", "BBR")) |> 
+  mutate(ant_name = case_match(
+    ant_species,
+    "AB" ~ "C.sjostedti",
+    "RRB" ~ "C.mimosae",
+    "BBR" ~ "C.nigriceps"
+  )) |> 
+  mutate(ant_name = as_factor(ant_name),
+    ant_name = fct_relevel(ant_name,
+                           "C.sjostedti",
+                           "C.mimosae",
+                           "C.nigriceps"))
+
+str(nests_clean)
+
+slice_sample(nests_clean, n = 10)
+```
+
+
 ### b. Response Variable
+
+The 1s and 0s present within the "case_control" column of the data represent if a bird nest was observed (1) or not (0) within a specific tree.
 
 ### c. Purpose of Study
 
+**Tree height** is a continuous, numerical variable measured in centimeters. As tree height increases, the probability of nest occurrence would increase because the tree contains more space for nesting and is further away from the ground and therefore potential predators. (Section 3: Results, ¶2)
+
+**Acacia ant species** is a categorical, nominal variable. The four studied ant species differ in aggression of protecting their host trees, as aggressive protection increases, bird nesting also increases because of this inherent nest protection. (Section 3: Results, ¶3)
+
 ### d. Table of Models
 
+| Model number | Ant Species | Height | Nests | Predictor List              |  
+|--------------|:-----------:|:------:|:-----:|:---------------------------:|  
+| 0            |             |        |       | no predictors (null model)  |
+| 1            |      X      |    X   |   X   | all predictors (full model) | 
+| 2            |      X      |    X   |       | Ant Species and Height      |   
+| 3            |      X      |        |   X   | Ant Species and Nests       |    
+| 4            |             |    X   |   X   | Height and Nests            |    
+| 5            |      X      |        |       | Ant Species                 |    
+| 6            |             |    X   |       | Height                      |    
+| 7            |             |        |   X   | Nests                       |
+
+| Model number | Ant Species | Height | Predictor List      |
+|--------------|:-----------:|:------:|:--------------------|
+| 0            |             |        | null model          |
+| 1            |      X      |    X   | no interaction term |
+| 2            |      X      |    X   | interaction term    |
+
 ### e. Running the Models
+
+```{r}
+
+model0 <- lm(case_control ~ 1,
+             data = nests_clean)
+model0
+```
+
 
 ### f. Selecting the Best Model
 
