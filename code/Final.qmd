@@ -54,7 +54,7 @@ Utilizing a Chi-Squared test, we found a significant relationship between bird s
 
 ### c. Further Analysis
 
-One additional variable that could influence the probability of American Avocet (*Recurvirostra americana*) microhabitat use is **salinity**. This variable is continuous, numerical (ppm) and often calculated after measuring electrical conductivity in micro Siemens per centimeter (µS/cm). Salinity influences a plethora of biological interactions, specifically dehydration, ([bodyweight and feeding/preening behavior.](https://bioone.org/journals/waterbirds/volume-26/issue-1/1524-4695_2003_026_0119_IOSOGA_2.0.CO_2/Impacts-of-Salinity-on-Growth-and-Behavior-of-American-Avocet/10.1675/1524-4695(2003)026%5B0119:IOSOGA%5D2.0.CO;2.full)).
+One additional variable that could influence the probability of American Avocet (*Recurvirostra americana*) microhabitat use is **salinity**. This variable is continuous, numerical (ppm) and often calculated after measuring electrical conductivity in micro Siemens per centimeter (µS/cm). Salinity influences a plethora of biological interactions, specifically dehydration, bodyweight and feeding/preening behavior.([link](https://bioone.org/journals/waterbirds/volume-26/issue-1/1524-4695_2003_026_0119_IOSOGA_2.0.CO_2/Impacts-of-Salinity-on-Growth-and-Behavior-of-American-Avocet/10.1675/1524-4695(2003)026%5B0119:IOSOGA%5D2.0.CO;2.full)).
 
 ## Problem 2. Data Analysis
 
@@ -129,19 +129,13 @@ model1 <- glm(
   # binomial family for binary (0/1) response variable
   family = "binomial")
 
-# displaying model 1
-model1
-
 # model 2: interaction between ant species and tree height on nest presence
 model2 <- glm(
-  #formula: reponse ~ variable * interacting variable
+  #formula: response ~ variable * interacting variable
   case_control ~ ant_name*height_cm,
   data = nests_clean,
   # binomial family for binary (0/1) response variable
   family = "binomial")
-
-# displaying model 2
-model2
 
 ```
 
@@ -224,9 +218,8 @@ ggplot(data = nests_clean,
 
 ### i. Writing a Caption for Figure
 
-**Fig. 2** Ant species and tree height interact to predict probability of bird nest occurrence in whistling thorn trees (_Vachellia drepanolobium_). Black circles represent individual observations of bird nests with values of "1" indicating the presence of a bird nest and "0" indicating no bird nest was observed. Solid, colored lines represent model predictions with shaded 'ribbons' representing 95% confidence intervals across ant species. Red represents _C.sjostedti_, Green represents _C.mimosae_, and blue represents _C.nigriceps_.
-
-As height increases, the probability of bird nesting increases. Additionally, the effect of tree height on bird nest probability is strongest for _C.nigriceps_, followed by _C.mimosae_ and weakest for _C.sjostedti_.
+**Fig. 2** Ant species and tree height interact to predict probability of bird nest occurrence in whistling thorn trees (_Vachellia drepanolobium_). Black circles represent individual observations of bird nests with values of "1" indicating the presence of a bird nest and "0" indicating no bird nest was observed. Solid, colored lines represent model predictions with shaded 'ribbons' representing 95% confidence intervals across ant species. Red represents _C.sjostedti_, Green represents _C.mimosae_, and blue represents _C.nigriceps_. Lujan, E., Nielsen, R., Short, Z., Wicks, S., Nderitu Watetu, W., Malingati Khasoha, L., Palmer, T. M., Goheen, J. R., & Alston, J. M. (2023). Data, code, and metadata for: Symbiotic acacia ants drive nesting behavior by birds in an African savanna [Data set]. Zenodo.
+https://doi.org/10.5281/zenodo.8373322
 
 ### j. Calculating Model Predictions
 
@@ -240,7 +233,7 @@ ggpredict(model2, terms = c("height_cm [600]",
 
 ### k. Interpreting Results
 
-At a tree height of six meters, the probability of nest occurrence is 0.2 (95% CI:[0,0.99]) for _C.sjostedti_, 0.74 (95% CI:[0.48,0.90]) for _C.mimosae_, and 1 (95% CI:[1.00,1.00]) for _C.nigriceps_. These values depict the relationship that birds tend to nest in taller trees occupied by _C.nigriceps_ and _C.mimosae_, while randomly and less frequently in trees occupied by _C.sjostedti_. This phenomenon is likely due to the acacia ants conferring protection to bird nests, with more aggressive species (_C.nigriceps_ and _C.mimosae_) offering better protection from predation.
+At a tree height of six meters, the probability of nest occurrence is 0.2 (95% CI:[0,0.99]) for _C.sjostedti_, 0.74 (95% CI:[0.48,0.90]) for _C.mimosae_, and 1 (95% CI:[1.00,1.00]) for _C.nigriceps_. As height increases, the probability of bird nesting increases. Additionally, the effect of tree height on bird nest probability is strongest for _C.nigriceps_, followed by _C.mimosae_ and weakest for _C.sjostedti_. These values depict the relationship that birds tend to nest in taller trees occupied by _C.nigriceps_ and _C.mimosae_, while randomly and less frequently in trees occupied by _C.sjostedti_. This phenomenon is likely due to the acacia ants conferring protection to bird nests, with more aggressive species (_C.nigriceps_ and _C.mimosae_) offering better protection from predation.
 
 ## Problem 3. Affective & Exploratory Visualizations
 
@@ -248,7 +241,7 @@ At a tree height of six meters, the probability of nest occurrence is 0.2 (95% C
 
 - My exploratory visualizations in HW 2 represents my data through a bar plot and scatter plot with very limited data to show. This contrasts heavily with my visualization in HW 3, which displays much more data and in the form of a jitter plot.
 
-- I see very little similarities between my visualizations as my rudimentary visualizations in HW 2 lacked data. However, I noticed the theme_bw() funciton is utilized in both, and I tend to gravitate towards blue as a color for representing my data.
+- I see very little similarities between my visualizations as my rudimentary visualizations in HW 2 lacked data. However, I noticed the black and white theme is utilized in both, and I tend to gravitate towards blue as a color for representing my data.
 
 - The relationship between screen time and time spent exercising shifted from a positive linear relationship in HW 2, to a weakly correlated, random relationship in HW 3. The accumulation of data points with 0 time spent exercising displays a large shift in data due to rest days. The difference in screen time *by exercise type* was an interesting pattern that emerged from the data, which was impossible to visualize in HW 2 due to a lack of data.
 
@@ -303,12 +296,13 @@ exercise_clean |>
 
 ```{r}
 
+# using exercise_clean object
 exercise_clean |> 
-  
+  # removing "Gym + Run" rows
   filter(exercise_type != "Gym + Run") |> 
-
+  # base layer ggplot
   ggplot(
-
+  # mapping exercise type to x axis and screen time to y axis
   mapping = aes(x = exercise_type,
                 y = screen_time)) +
     # adding boxplots colored by exercise type
@@ -353,7 +347,7 @@ exercise_clean |>
 
 ### f. Writing About Results
 
-We found a **small** ( $\eta^2 = 0.029$ ) **non-statistically significant** ($p > \alpha$) difference in median screen time between resistance training ( $\tilde{x}=181$ min $,n=13$ ), no exercise ( $\tilde{x}=182$ min $,n=10$ ), and running ( $\tilde{x}=134$ min $,n=5$ ). ( Kruskal-Wallis test, $\chi^2(2)=1.29,p=0.53,\alpha=0.05$ ). Post-hoc Dunn testing further proved no statistically significant difference was present between groups, with the lowest $p_{adj}=0.77$. **Note:** the small ($n=5$) sample size of the running group may have affected overall statistical outcomes.
+We found a **small** ( $\eta^2 = -0.029$ ) **non-statistically significant** ($p > \alpha$) difference in median screen time between resistance training ( $\tilde{x}=181$ min $,n=13$ ), no exercise ( $\tilde{x}=182$ min $,n=10$ ), and running ( $\tilde{x}=134$ min $,n=5$ ). ( Kruskal-Wallis test, $\chi^2(2)=1.29,p=0.53,\alpha=0.05$ ). Post-hoc Dunn testing further proved no statistically significant difference was present between groups, with the lowest $p_{adj}=0.77$. **Note:** the small ($n=5$) sample size of the running group may have affected overall statistical outcomes.
 
 ### g. Sharing Affective Visualization
 
