@@ -54,7 +54,7 @@ Utilizing a Chi-Squared test, we found a significant relationship between bird s
 
 ### c. Further Analysis
 
-One additional variable that could influence the probability of American Avocet (*Recurvirostra americana*) microhabitat use is **salinity**. This variable is continuous, numerical (ppm) and often calculated after measuring electrical conductivity in micro Siemens per centimeter (µS/cm). Salinity influences a plethora of biological interactions, specifically dehydration, bodyweight and feeding/preening behavior.([link](https://bioone.org/journals/waterbirds/volume-26/issue-1/1524-4695_2003_026_0119_IOSOGA_2.0.CO_2/Impacts-of-Salinity-on-Growth-and-Behavior-of-American-Avocet/10.1675/1524-4695(2003)026%5B0119:IOSOGA%5D2.0.CO;2.full)).
+One additional variable that could influence the probability of American Avocet (*Recurvirostra americana*) microhabitat use is **salinity**. This variable is continuous, numerical (ppm) and often calculated after measuring electrical conductivity in micro Siemens per centimeter (µS/cm). Salinity influences a plethora of biological interactions, specifically dehydration, bodyweight and feeding/preening behavior. ([Link to relevant paper](https://bioone.org/journals/waterbirds/volume-26/issue-1/1524-4695_2003_026_0119_IOSOGA_2.0.CO_2/Impacts-of-Salinity-on-Growth-and-Behavior-of-American-Avocet/10.1675/1524-4695(2003)026%5B0119:IOSOGA%5D2.0.CO;2.full))
 
 ## Problem 2. Data Analysis
 
