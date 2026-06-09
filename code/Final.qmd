@@ -22,12 +22,18 @@ execute:
 
 ```{r Loading Packages and Data}
 
+# loading in relevant packages
 library(tidyverse)
 library(here)
 library(janitor)
 library(DHARMa)
+library(ggeffects)
+library(rstatix)
 
+# reading in nest observation data
 nests <- read.csv(here("data","nest_data_final.csv"))
+# reading in personal exercise and screen time data
+exercise <- read.csv(here("data","exercise.csv"))
 ```
 
 # Problems
@@ -48,7 +54,7 @@ Utilizing a Chi-Squared test, we found a significant relationship between bird s
 
 ### c. Further Analysis
 
-One additional variable that could influence the probability of American Avocet (*Recurvirostra americana*) microhabitat use is **salinity**. This variable is continuous, numerical (ppm) and often calculated after measuring electrical conductivity in micro Siemens per centimeter (µS/cm). Salinity influences a plethora of biological interactions, specifically dehydration, [bodyweight and feeding/preening behavior.](https://bioone.org/journals/waterbirds/volume-26/issue-1/1524-4695_2003_026_0119_IOSOGA_2.0.CO_2/Impacts-of-Salinity-on-Growth-and-Behavior-of-American-Avocet/10.1675/1524-4695(2003)026%5B0119:IOSOGA%5D2.0.CO;2.full).
+One additional variable that could influence the probability of American Avocet (*Recurvirostra americana*) microhabitat use is **salinity**. This variable is continuous, numerical (ppm) and often calculated after measuring electrical conductivity in micro Siemens per centimeter (µS/cm). Salinity influences a plethora of biological interactions, specifically dehydration, ([bodyweight and feeding/preening behavior.](https://bioone.org/journals/waterbirds/volume-26/issue-1/1524-4695_2003_026_0119_IOSOGA_2.0.CO_2/Impacts-of-Salinity-on-Growth-and-Behavior-of-American-Avocet/10.1675/1524-4695(2003)026%5B0119:IOSOGA%5D2.0.CO;2.full)).
 
 ## Problem 2. Data Analysis
 
@@ -57,26 +63,40 @@ One additional variable that could influence the probability of American Avocet 
 ```{r Cleaning Data}
 
 nests_clean <- nests |> 
+  # retaining only columns needed for analysis
   select(case_control,
          ant_species,
          height_cm) |> 
+  # keeping only the three relevant ant species
   filter(ant_species %in% c("AB",
                             "RRB",
                             "BBR")) |> 
+  # replacing species codes with scientific names
   mutate(ant_name = case_match(
     ant_species,
     "AB" ~ "C.sjostedti",
     "RRB" ~ "C.mimosae",
     "BBR" ~ "C.nigriceps"
   )) |> 
+  # converting ant_name to a factor and setting display order
   mutate(ant_name = as_factor(ant_name),
          ant_name = fct_relevel(ant_name,
                                 "C.sjostedti",
                                 "C.mimosae",
                                 "C.nigriceps"))
 
+exercise_clean <- exercise |> 
+  # standardizing column names
+  clean_names() |> 
+  # retaining only columns needed for analysis
+  select(screen_time,
+         exercise_time,
+         exercise_type)
+
+# checking column types and structure
 str(nests_clean)
 
+# previewing 10 random rows
 slice_sample(nests_clean, n = 10)
 
 ```
@@ -101,19 +121,26 @@ The 1s and 0s present within the "case_control" column of the data represent if 
 ### e. Running the Models
 
 ```{r Creating Models, output=FALSE}
-
+# model 1: additive effects of ant species and tree height on nest presence
 model1 <- glm(
+  # formula: response: variable + variable
   case_control ~ ant_name + height_cm,
   data = nests_clean,
+  # binomial family for binary (0/1) response variable
   family = "binomial")
 
+# displaying model 1
 model1
 
+# model 2: interaction between ant species and tree height on nest presence
 model2 <- glm(
+  #formula: reponse ~ variable * interacting variable
   case_control ~ ant_name*height_cm,
   data = nests_clean,
+  # binomial family for binary (0/1) response variable
   family = "binomial")
 
+# displaying model 2
 model2
 
 ```
@@ -122,6 +149,7 @@ model2
 
 ```{r AIC}
 
+# comparing models by AIC; lower AIC indicates better fit
 AIC(model1,
     model2)
 
@@ -133,9 +161,8 @@ The best model as determined by Akaike's Information Criterion (AIC) was the mod
 
 ```{r Plotting Diagnostics}
 
-plot(
-  simulateResiduals(model2)
-)
+# simulating residuals and plotting DHARMa diagnostic plots to check model assumptions
+plot(simulateResiduals(model2))
 
 ```
 
@@ -143,46 +170,191 @@ plot(
 
 ```{r GLM Plot}
 
+# generating predicted probabilities across tree heights for each ant species
+mod_preds <- ggpredict(model2, terms = c("height_cm","ant_name"))
+
+# base layer ggplot, tree height on x-axis, nest ocurence on y-axis.
+ggplot(data = nests_clean,
+       mapping = aes(x = height_cm,
+                     y = case_control)) +
+  # plotting raw nest observations as semi-transparent open circles
+  geom_point(shape = 21,
+             alpha = 0.5,
+             col = 'black') +
+  # adding 95% confidence interval ribbons per ant species
+  geom_ribbon(data = mod_preds,
+              aes(x = x,
+                  y = predicted,
+                  ymin = conf.low,
+                  ymax = conf.high,
+                  fill = group),
+              alpha = 0.2) +
+  # adding model prediction lines per ant species
+  geom_line(data = mod_preds,
+            aes(x = x,
+                y = predicted,
+                color = group),
+            linewidth = 0.8) +
+  # setting y-axis to span 0-1 probability scale
+  scale_y_continuous(limits = c(0,1),
+                     breaks = c(0,1),
+                     expand = c(0.007,0.007)) +
+  # setting x-axis to observed range of tree heights
+  scale_x_continuous(limits = c(50,600),
+                     breaks = c(50,150,300,450,600),
+                     expand = c(0.005,0.005)) +
+  # non-default theme
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        # hiding legend since ant species are labeled via facets
+        legend.position = "none", 
+        panel.spacing.x = unit(0.5,"cm")) +
+  # labelling axes
+  labs(x = "Tree Height (cm)",
+       y = "Probability of Nest Occurence") +
+  # manually assigning colors to each ant species
+  scale_color_manual(values = c("C.sjostedti" = 'tomato3',
+                                "C.mimosae" = 'forestgreen',
+                                "C.nigriceps" = 'steelblue')) +
+  # creating a separate panel per ant species
+  facet_wrap( ~ group)
+
 ```
 
 
 ### i. Writing a Caption for Figure
 
+**Fig. 2** Ant species and tree height interact to predict probability of bird nest occurrence in whistling thorn trees (_Vachellia drepanolobium_). Black circles represent individual observations of bird nests with values of "1" indicating the presence of a bird nest and "0" indicating no bird nest was observed. Solid, colored lines represent model predictions with shaded 'ribbons' representing 95% confidence intervals across ant species. Red represents _C.sjostedti_, Green represents _C.mimosae_, and blue represents _C.nigriceps_.
 
+As height increases, the probability of bird nesting increases. Additionally, the effect of tree height on bird nest probability is strongest for _C.nigriceps_, followed by _C.mimosae_ and weakest for _C.sjostedti_.
 
 ### j. Calculating Model Predictions
 
+```{r}
 
+# predicting nest probability at maximum observed height (600 cm) for each ant species
+ggpredict(model2, terms = c("height_cm [600]",
+                            "ant_name"))
+
+```
 
 ### k. Interpreting Results
 
-
+At a tree height of six meters, the probability of nest occurrence is 0.2 (95% CI:[0,0.99]) for _C.sjostedti_, 0.74 (95% CI:[0.48,0.90]) for _C.mimosae_, and 1 (95% CI:[1.00,1.00]) for _C.nigriceps_. These values depict the relationship that birds tend to nest in taller trees occupied by _C.nigriceps_ and _C.mimosae_, while randomly and less frequently in trees occupied by _C.sjostedti_. This phenomenon is likely due to the acacia ants conferring protection to bird nests, with more aggressive species (_C.nigriceps_ and _C.mimosae_) offering better protection from predation.
 
 ## Problem 3. Affective & Exploratory Visualizations
 
 ### a. Comparing Visualizations
 
+- My exploratory visualizations in HW 2 represents my data through a bar plot and scatter plot with very limited data to show. This contrasts heavily with my visualization in HW 3, which displays much more data and in the form of a jitter plot.
 
+- I see very little similarities between my visualizations as my rudimentary visualizations in HW 2 lacked data. However, I noticed the theme_bw() funciton is utilized in both, and I tend to gravitate towards blue as a color for representing my data.
+
+- The relationship between screen time and time spent exercising shifted from a positive linear relationship in HW 2, to a weakly correlated, random relationship in HW 3. The accumulation of data points with 0 time spent exercising displays a large shift in data due to rest days. The difference in screen time *by exercise type* was an interesting pattern that emerged from the data, which was impossible to visualize in HW 2 due to a lack of data.
+
+- I received really good feedback from Professor Bui, regarding a jitter plot as the appropriate form of data visualization, which was implemented throughout further assignments. Furthermore, I received feedback of abstracting screen time into the background of my artist statement from my peers which I found to be a great, creative concept and inputted this advice into my artistic piece.
 
 ### b. Designing an Analysis
 
-
+One analysis that I can run for my data is a Kruskal-Wallis Rank Sum test. My essential research question is how does time spent exercising affect my screen time. However, after more data collection, I have become curious on how the *type of exercise* affects my screen time, does one type of exercise reduce screen time more than another? The Kruskal-Wallis test is appropriate for this question as it will directly compare the median screen time of three different exercise types which are categorical, nominal data.
 
 ### c. Checking Assumptions & Running Analysis
 
+Assumption 1: Random Sampling
+- Because I took the data myself, and recorded independent observations varying by day, each observation is random and non-influential over another data point.
+
+
+Assumption 2: 5 Minimum Observations Per Group
+
+```{r}
+
+exercise_clean |> 
+  # counting observations per exercise type to verify minimum sample size assumption
+  count(exercise_type)
+
+# calculating median screen time per exercise type
+aggregate(screen_time ~ exercise_type, data = exercise_clean, FUN = median)
+
+```
+
+**Note:** Because the "Gym + Run" group only has two observations, I will omit it from my Kruskal-Wallis Rank Sum test as it violates assumption 2.
+
+```{r}
+
+# running Kruskal-Wallis test, excluding the underpowered "Gym + Run" group
+kruskal.test(
+  screen_time ~ exercise_type,
+  data = exercise_clean,
+  subset = exercise_type != "Gym + Run")
+
+# post-hoc Dunn test to identify which group pairs differ significantly
+exercise_clean |> 
+  filter(exercise_type != "Gym + Run") |> 
+  dunn_test(screen_time ~ exercise_type)
+
+# calculating eta-squared effect size for the Kruskal-Wallis result
+exercise_clean |> 
+  filter(exercise_type != "Gym + Run") |> 
+  kruskal_effsize(screen_time ~ exercise_type)
+```
 
 
 ### d. Creating Visualization
 
+```{r}
+
+exercise_clean |> 
+  
+  filter(exercise_type != "Gym + Run") |> 
+
+  ggplot(
+
+  mapping = aes(x = exercise_type,
+                y = screen_time)) +
+    # adding boxplots colored by exercise type
+    geom_boxplot(aes(color = exercise_type),
+                 # removing outliers since we have a jitterplot
+                 outlier.shape = NA) +
+    geom_jitter(
+    # restricting vertical movement to show exact data values
+    height = 0, 
+    # slightly shifting points horizontally to prevent stacking
+    width = 0.2, 
+    # setting point type to a filled circle border
+    shape = 21,
+    alpha = 0.5,
+    size = 2,
+    aes(fill = exercise_type)) + 
+  # manually assigning colors to categories for boxplot
+  scale_color_manual(
+    values = c("Gym" = "tomato3",
+               "Run" = 'navyblue',
+               "No Exercise" = 'forestgreen')) + 
+  # manually assigning colors to categories for jitterplot
+  scale_fill_manual(
+    values = c("Gym" = "tomato",
+               "Run" = 'cornflowerblue',
+               "No Exercise" = 'springgreen')) +
+  # non-default theme
+  theme_bw() +
+  # removing legend and gridlines
+  theme(legend.position = "none",
+        panel.grid = element_blank()) +
+  # labelling axes
+  labs(x = "Exercise Type",
+       y = "Screen Time (minutes)")
+
+```
 
 
 ### e. Writing Caption
 
-
+**Fig. 3** Daily screen time by exercise type. Circles represent individual observations of screen time in minutes; boxplots represent group medians and interquartile ranges (IQR). Red data denotes resistance training, green denotes no exercise, and blue denotes running.
 
 ### f. Writing About Results
 
-
+We found a **small** ( $\eta^2 = 0.029$ ) **non-statistically significant** ($p > \alpha$) difference in median screen time between resistance training ( $\tilde{x}=181$ min $,n=13$ ), no exercise ( $\tilde{x}=182$ min $,n=10$ ), and running ( $\tilde{x}=134$ min $,n=5$ ). ( Kruskal-Wallis test, $\chi^2(2)=1.29,p=0.53,\alpha=0.05$ ). Post-hoc Dunn testing further proved no statistically significant difference was present between groups, with the lowest $p_{adj}=0.77$. **Note:** the small ($n=5$) sample size of the running group may have affected overall statistical outcomes.
 
 ### g. Sharing Affective Visualization
 
+Done!
